@@ -45,14 +45,16 @@ jobs:
     - name: run docker image
       run: |
         COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
-        if [ -n "$containerId" ]; then
-        echo "Stop and remove existing container..."
-        docker stop $CONTAINER_NAME | xargs docker rm
-        fi
+        docker compose -f dc-demo-cicd.yml up -d
 
-        docker rmi $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT || true
-        docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        # containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
+        # if [ -n "$containerId" ]; then
+        # echo "Stop and remove existing container..."
+        # docker stop $CONTAINER_NAME | xargs docker rm
+        # fi
+
+        # docker rmi $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT || true
+        # docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
  
-        echo "Start new container..."
-        docker run -d --name $CONTAINER_NAME -p 8080:8080 $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        # echo "Start new container..."
+        # docker run -d --name $CONTAINER_NAME -p 8080:8080 $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
