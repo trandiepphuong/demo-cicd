@@ -32,7 +32,7 @@ jobs:
       run: |
         COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker push $$DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
 
   deploy:
