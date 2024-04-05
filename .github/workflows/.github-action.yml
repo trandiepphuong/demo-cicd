@@ -6,13 +6,19 @@ on:
 env:
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ vars.DOCKER_PASSWORD }}
-  COMMIT_SHA_SHORT: ${{ vars.GITHUB_SHA::6 }}
   CONTAINER_NAME: golang-devops
 
 permissions:
   contents: read
 
 jobs:
+  prebuild:
+    runs-on: self-hosted
+    steps:
+    - name: prebuild
+      run: |
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
+      
   build:
     runs-on: self-hosted
     steps:
