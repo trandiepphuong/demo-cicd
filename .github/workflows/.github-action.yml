@@ -55,4 +55,4 @@ jobs:
         docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
  
         echo "Start new container..."
-        docker run -d --name $CONTAINER_NAME -p 8080:8080
+        docker run -d --name $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT -p 8080:8080
