@@ -6,20 +6,23 @@ on:
 env:
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ vars.DOCKER_PASSWORD }}
+  IMAGE_NAME: golang-devops
   CONTAINER_NAME: golang-devops
 
 permissions:
   contents: read
 
 jobs:
+      
   build:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
-
+    
     - name: build docker image
       run: |
-        docker build -t $DOCKER_USERNAME/$CONTAINER_NAME:${{ GITHUB.SHA }}
+        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
 
   push-image:
     runs-on: self-hosted
@@ -27,8 +30,9 @@ jobs:
     steps:
     - name: push docker image
       run: |
+        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker push $DOCKER_USERNAME/$CONTAINER_NAME:${{ GITHUB.SHA }}
+        docker push $$DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
 
   deploy:
@@ -37,17 +41,18 @@ jobs:
     runs-on: self-hosted
     needs: push-image
 
-    steps:
+    steps:    
     - name: run docker image
       run: |
+        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
         containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
         if [ -n "$containerId" ]; then
         echo "Stop and remove existing container..."
         docker stop $CONTAINER_NAME | xargs docker rm
         fi
 
-        docker rmi $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG || true
-        docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+        docker rmi $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT || true
+        docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
  
         echo "Start new container..."
         docker run -d --name $CONTAINER_NAME -p 8080:8080
