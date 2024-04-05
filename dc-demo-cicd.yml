@@ -2,7 +2,7 @@ version: '3.7'
 services:
   golang-devops:
     container_name: ${CONTAINER_NAME}
-    image: ${DOCKER_USERNAME}/${IMAGE_NAME}:$COMMIT_SHA_SHORT:${COMMIT_SHA_SHORT}
+    image: ${DOCKER_USERNAME}/${IMAGE_NAME}:$COMMIT_SHA_SHORT
     restart: always
     ports:
       - 8080:8080
