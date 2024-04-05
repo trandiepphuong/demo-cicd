@@ -44,7 +44,7 @@ jobs:
     steps:    
     - name: run docker image
       run: |
-        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        export COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
         docker compose -f dc-demo-cicd.yml up -d
 
         # containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
