@@ -18,26 +18,19 @@ jobs:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v3
-
-    - name: pre
-      run: |
-        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
     
     - name: build docker image
       run: |
-        echo $DOCKER_USERNAME $COMMIT_SHA_SHORT
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
         docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
 
   push-image:
     runs-on: self-hosted
     needs: build
     steps:
-    - name: pre
-      run: |
-        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
-        
     - name: push docker image
       run: |
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
         docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         docker push $$DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
@@ -48,13 +41,10 @@ jobs:
     runs-on: self-hosted
     needs: push-image
 
-    steps:
-    - name: pre
-      run: |
-        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
-        
+    steps:    
     - name: run docker image
       run: |
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
         containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
         if [ -n "$containerId" ]; then
         echo "Stop and remove existing container..."
