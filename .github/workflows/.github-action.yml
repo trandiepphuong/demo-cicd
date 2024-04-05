@@ -7,25 +7,63 @@ env:
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ vars.DOCKER_PASSWORD }}
   CONTAINER_NAME: golang-devops
+  DOCKER_IMAGE_NAME: ${{ vars.DOCKER_USERNAME }}/$CONTAINER_NAME
 
 permissions:
   contents: read
 
 jobs:
-  pre-build:
-    runs-on: self-hosted
-    steps:
-    - name: pre-build
-      run: |
-        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
       
   build:
     runs-on: self-hosted
-    needs: pre-build
     steps:
     - uses: actions/checkout@v3
 
+    - name: pre
+      run: |
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
+    
     - name: build docker image
       run: |
         echo $COMMIT_SHA_SHORT
-        #docker build -t $DOCKER_USERNAME/$CONTAINER_NAME:$COMMIT_SHA_SHORT
+        echo $DOCKER_IMAGE_NAME:$COMMIT_SHA_SHORT
+        docker build -t $DOCKER_IMAGE_NAME:$COMMIT_SHA_SHORT .
+
+  push-image:
+    runs-on: self-hosted
+    needs: build
+    steps:
+    - name: pre
+      run: |
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
+        
+    - name: push docker image
+      run: |
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        docker push $DOCKER_USERNAME/$CONTAINER_NAME:$COMMIT_SHA_SHORT
+        
+
+  deploy:
+    permissions:
+      contents: none
+    runs-on: self-hosted
+    needs: push-image
+
+    steps:
+    - name: pre
+      run: |
+        echo "COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`"
+        
+    - name: run docker image
+      run: |
+        containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
+        if [ -n "$containerId" ]; then
+        echo "Stop and remove existing container..."
+        docker stop $CONTAINER_NAME | xargs docker rm
+        fi
+
+        docker rmi $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG || true
+        docker pull $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+ 
+        echo "Start new container..."
+        docker run -d --name $CONTAINER_NAME -p 8080:8080
