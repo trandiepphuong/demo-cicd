@@ -29,7 +29,8 @@ jobs:
     
     - name: build docker image
       run: |
-        $COMMIT_SHA_SHORT
+        echo "Hello $COMMIT_SHA_SHORT"
+        docker build -t abc:$COMMIT_SHA_SHORT .
         #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
         #docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
 
