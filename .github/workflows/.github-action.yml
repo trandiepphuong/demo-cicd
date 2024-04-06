@@ -23,12 +23,13 @@ jobs:
         echo COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7` >> $GITHUB_ENV
   build:
     runs-on: self-hosted
+    needs: prebuild
     steps:
     - uses: actions/checkout@v3
     
     - name: build docker image
       run: |
-        echo $COMMIT_SHA_SHORT
+        $COMMIT_SHA_SHORT
         #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
         #docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
 
