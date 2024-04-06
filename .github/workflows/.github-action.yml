@@ -1,13 +1,72 @@
-name: My Workflow
-
 on:
+  push:
+    branches: [ "main", "develop" ]
+    tags:
+      - '*'
   workflow_dispatch:
 
+env:
+  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ vars.DOCKER_PASSWORD }}
+  IMAGE_NAME: golang-devops
+  CONTAINER_NAME: golang-devops
+
+permissions:
+  contents: read
+
 jobs:
-  my-job:
-    runs-on: ubuntu-latest
+  prebuild:
+    runs-on: self-hosted
     steps:
-      - name: Step 1
-        run: echo "This is step 1"
-      - name: Step 2
-        run: echo "This is step 2"
+    - name: prebuild
+      run:
+        #echo COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7` >> $GITHUB_ENV
+        echo "COMMIT_SHA_SHORT=test" >> $GITHUB_ENV
+  build:
+    runs-on: self-hosted
+    needs: prebuild
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: build docker image
+      run: |
+        echo "Hello $COMMIT_SHA_SHORT"
+        docker build -t abc:$COMMIT_SHA_SHORT .
+        #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        #docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
+
+  push-image:
+    runs-on: self-hosted
+    needs: build
+    steps:
+    - name: push docker image
+      run: |
+        echo $COMMIT_SHA_SHORT
+        #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        #docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        #docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        
+
+  deploy:
+    permissions:
+      contents: none
+    runs-on: self-hosted
+    needs: push-image
+    environment: PROD
+    steps:    
+    - name: run docker image
+      run: |
+        #export COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        #docker compose -f dc-demo-cicd.yml up -d
+
+        # containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
+        # if [ -n "$containerId" ]; then
+        # echo "Stop and remove existing container..."
+        # docker stop $CONTAINER_NAME | xargs docker rm
+        # fi
+
+        # docker rmi $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT || true
+        # docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+ 
+        # echo "Start new container..."
+        # docker run -d --name $CONTAINER_NAME -p 8080:8080 $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
