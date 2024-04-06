@@ -15,7 +15,12 @@ permissions:
   contents: read
 
 jobs:
-      
+  prebuild:
+    runs-on: self-hosted
+    steps:
+    - name: prebuild
+      run:
+        echo COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7` >> $GITHUB_ENV
   build:
     runs-on: self-hosted
     steps:
@@ -23,8 +28,9 @@ jobs:
     
     - name: build docker image
       run: |
-        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
+        echo $COMMIT_SHA_SHORT
+        #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        #docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
 
   push-image:
     runs-on: self-hosted
@@ -32,9 +38,10 @@ jobs:
     steps:
     - name: push docker image
       run: |
-        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        echo $COMMIT_SHA_SHORT
+        #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        #docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        #docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
 
   deploy:
@@ -46,8 +53,8 @@ jobs:
     steps:    
     - name: run docker image
       run: |
-        export COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        docker compose -f dc-demo-cicd.yml up -d
+        #export COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        #docker compose -f dc-demo-cicd.yml up -d
 
         # containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
         # if [ -n "$containerId" ]; then
