@@ -40,7 +40,7 @@ jobs:
       contents: none
     runs-on: self-hosted
     needs: push-image
-
+    environment: PROD
     steps:    
     - name: run docker image
       run: |
