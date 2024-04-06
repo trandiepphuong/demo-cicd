@@ -20,7 +20,8 @@ jobs:
     steps:
     - name: prebuild
       run:
-        echo COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7` >> $GITHUB_ENV
+        #echo COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7` >> $GITHUB_ENV
+        echo "COMMIT_SHA_SHORT=test" >> $GITHUB_ENV
   build:
     runs-on: self-hosted
     needs: prebuild
