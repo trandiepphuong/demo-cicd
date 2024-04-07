@@ -1,27 +1,19 @@
 on:
   push:
     branches: [ "main", "develop" ]
-    tags:
-      - '*'
   workflow_dispatch:
 
 env:
   DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
   DOCKER_PASSWORD: ${{ vars.DOCKER_PASSWORD }}
-  IMAGE_NAME: golang-devops
-  CONTAINER_NAME: golang-devops
+  IMAGE_NAME: app-devops
+  CONTAINER_NAME: app-devops
 
 permissions:
   contents: read
 
 jobs:
-  prebuild:
-    runs-on: self-hosted
-    steps:
-    - name: prebuild
-      run:
-        #echo COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7` >> $GITHUB_ENV
-        echo "COMMIT_SHA_SHORT=test" >> $GITHUB_ENV
+  
   build:
     runs-on: self-hosted
     needs: prebuild
@@ -30,10 +22,8 @@ jobs:
     
     - name: build docker image
       run: |
-        echo "Hello $COMMIT_SHA_SHORT"
-        docker build -t abc:$COMMIT_SHA_SHORT .
-        #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        #docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
+        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        docker build -t $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT .
 
   push-image:
     runs-on: self-hosted
@@ -41,10 +31,9 @@ jobs:
     steps:
     - name: push docker image
       run: |
-        echo $COMMIT_SHA_SHORT
-        #COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        #docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        #docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        docker login -u $DOCKER_USERNAME -p ${{ DOCKER_PASSWORD }}
+        docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
 
   deploy:
@@ -52,21 +41,19 @@ jobs:
       contents: none
     runs-on: self-hosted
     needs: push-image
-    environment: PROD
     steps:    
-    - name: run docker image
+    - name: run docker container
       run: |
-        #export COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        #docker compose -f dc-demo-cicd.yml up -d
+        COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
+        
+        containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
+        if [ -n "$containerId" ]; then
+        echo "Stop and remove existing container..."
+        docker stop $CONTAINER_NAME | xargs docker rm
+        fi
 
-        # containerId=$(docker ps -qa --filter "name=^$CONTAINER_NAME\$")
-        # if [ -n "$containerId" ]; then
-        # echo "Stop and remove existing container..."
-        # docker stop $CONTAINER_NAME | xargs docker rm
-        # fi
-
-        # docker rmi $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT || true
-        # docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        docker rmi $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT || true
+        docker pull $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
  
-        # echo "Start new container..."
-        # docker run -d --name $CONTAINER_NAME -p 8080:8080 $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
+        echo "Start new container..."
+        docker run -d --name $CONTAINER_NAME -p 8080:8080 $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
