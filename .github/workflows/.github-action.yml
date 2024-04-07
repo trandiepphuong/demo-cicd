@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_USERNAME: ${{ vars.DOCKER_USERNAME }}
-  DOCKER_PASSWORD: ${{ vars.DOCKER_PASSWORD }}
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
   IMAGE_NAME: app-devops
   CONTAINER_NAME: app-devops
 
@@ -31,7 +30,7 @@ jobs:
     - name: push docker image
       run: |
         COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        docker login -u $DOCKER_USERNAME -p ${{ env.DOCKER_PASSWORD }}
+        docker login -u $DOCKER_USERNAME -p ${{ secrets.DOCKER_PASSWORD }}
         docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
 
