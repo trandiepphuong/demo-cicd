@@ -5,6 +5,7 @@ on:
 
 env:
   DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
   IMAGE_NAME: app-devops
   CONTAINER_NAME: app-devops
 
@@ -30,7 +31,7 @@ jobs:
     - name: push docker image
       run: |
         COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        docker login -u $DOCKER_USERNAME -p ${{ secrets.DOCKER_PASSWORD }}
+        docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         docker push $DOCKER_USERNAME/$IMAGE_NAME:$COMMIT_SHA_SHORT
         
 
