@@ -12,6 +12,7 @@ env:
   CONTAINER_NAME: app-devops
   CHART_GIT_URL: github.com/quoc9x/helm-cicd.git
   DOCKER_YQ_IMAGE: mikefarah/yq:4
+  CHART_VALUES_FILE: values.yaml
 
 permissions:
   contents: read
