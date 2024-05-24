@@ -10,7 +10,7 @@ env:
   RUNNER_GITHUB_TOKEN: ${{ secrets.RUNNER_GITHUB_TOKEN }}
   IMAGE_NAME: app-devops
   CONTAINER_NAME: app-devops
-  CHART_GIT_URL: https://github.com/quoc9x/helm-cicd.git
+  CHART_GIT_URL: github.com/quoc9x/helm-cicd.git
   DOCKER_YQ_IMAGE: mikefarah/yq:4
 
 permissions:
@@ -48,7 +48,7 @@ jobs:
     - name: run k8s
       run: |
         COMMIT_SHA_SHORT=`echo ${GITHUB_SHA} | cut -c1-7`
-        git clone http://$RUNNER_GITHUB_USER:$RUNNER_GITHUB_TOKEN@$CHART_GIT_URL chart && cd chart
+        git clone https://$RUNNER_GITHUB_USER:$RUNNER_GITHUB_TOKEN@$CHART_GIT_URL chart && cd chart
         docker run --rm \
         --user="root" \
         -v "${PWD}":/workspace \
