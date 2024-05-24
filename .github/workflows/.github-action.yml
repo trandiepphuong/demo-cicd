@@ -54,7 +54,7 @@ jobs:
         --user="root" \
         -v "${PWD}":/workspace \
         -w /workspace \
-        $DOCKER_YQ_IMAGE
+        $DOCKER_YQ_IMAGE \
         -i '.image.tag = "'$COMMIT_SHA_SHORT'"' $CHART_VALUES_FILE
         git config --global user.email "quoc9x@gmail.com" 
         git config --global user.name "quoc9x" 
